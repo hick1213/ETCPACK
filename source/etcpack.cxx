@@ -51,6 +51,7 @@
 #include <math.h> 
 #include <time.h>
 #include <sys/timeb.h>
+#include <sys/time.h>
 #include "image.h"
 
 // Typedefs
@@ -15882,10 +15883,7 @@ void compressFile(char *srcfile,char *dstfile)
 	uint8 *srcimg;
 	int width,height;
 	int extendedwidth, extendedheight;
-	struct _timeb tstruct;
-	int tstart;
-	int tstop;
-	// 0: compress from .any to .pkm with SPEED_FAST, METRIC_NONPERCEPTUAL, ETC 
+	// 0: compress from .any to .pkm with SPEED_FAST, METRIC_NONPERCEPTUAL, ETC
 	// 1: compress from .any to .pkm with SPEED_MEDIUM, METRIC_NONPERCEPTUAL, ETC
 	// 2: compress from .any to .pkm with SPEED_SLOW, METRIC_NONPERCEPTUAL, ETC
 	// 3: compress from .any to .pkm with SPEED_FAST, METRIC_PERCEPTUAL, ETC
@@ -15958,15 +15956,13 @@ void compressFile(char *srcfile,char *dstfile)
 				setupAlphaTableAndValtab();
 			}
 			printf("Compressing...\n");
-
-			tstart=time(NULL);
-			_ftime( &tstruct );
-			tstart=tstart*1000+tstruct.millitm;
-			compressImageFile(srcimg,alphaimg,width,height,dstfile,extendedwidth, extendedheight);			
-			tstop = time(NULL);
-			_ftime( &tstruct );
-			tstop = tstop*1000+tstruct.millitm;
-			printf( "It took %u milliseconds to compress:\n", tstop - tstart);
+            struct timeval tvStart, tvEnd;
+            double dbCostms;
+            gettimeofday(&tvStart, NULL);
+			compressImageFile(srcimg,alphaimg,width,height,dstfile,extendedwidth, extendedheight);
+            gettimeofday(&tvEnd, NULL);
+            dbCostms = (double)(1000 * (tvEnd.tv_sec - tvStart.tv_sec) + ((tvEnd.tv_usec - tvStart.tv_usec) / 1000.0));
+            printf( "It took %u milliseconds to compress:\n", dbCostms);
 			calculatePSNRfile(dstfile,srcimg,alphaimg);
 		}
 	}
